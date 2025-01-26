@@ -4,7 +4,7 @@ from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from models import MessageModel
 
-async def create_messages(messages: List[dict], session: AsyncSession) -> MessageModel:
+async def create_messages(messages: List[dict], session: AsyncSession) -> List[MessageModel]:
     """
     Create a new message in the database, returning 200 on success.
     """
@@ -36,7 +36,7 @@ async def update_message(message_id: int, new_content: str, session: AsyncSessio
         if db_message == None:
             raise HTTPException(
                 status_code=404,
-                detail=f"Could not find and message with id {message_id}"
+                detail=f"Could not find a message with id {message_id}"
             )
         db_message.content = new_content
         await session.commit()
@@ -56,3 +56,26 @@ async def update_message(message_id: int, new_content: str, session: AsyncSessio
         )
     
 
+async def delete_message(message_id: int, session: AsyncSession) -> bool:
+    try:
+        db_message = await session.get(MessageModel, message_id)
+        if db_message == None:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Could not find a message with id {message_id}"
+            )
+        await session.delete(db_message)
+        await session.commit()
+        print(f"Message with id: {message_id} deleted!\n")
+        return True
+    
+    except HTTPException as e:
+        print(f"Unexpected error creating messages: {e}\n")
+        raise e
+
+    except Exception as e:
+        print(f"Unexpected error creating messages: {e}\n")
+        raise HTTPException(
+            status_code=500,
+            detail="An unexpected error occurred. Please try again later."
+        )

@@ -47,7 +47,7 @@ async def prepare_database():
     yield
     # Drop the tables after tests are done
     async with engine_test.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+        await conn.run_sync(Base.metadata.drop_all)
 
 
 @pytest_asyncio.fixture
@@ -92,7 +92,7 @@ async def client_db_connect_error():
 ######## Create Tests ###########
 
 @pytest.mark.asyncio
-async def test_db_commit_error(client_db_commit_error, prepare_database):
+async def test_create_message_db_commit_error(client_db_commit_error: AsyncClient, prepare_database):
     response = await client_db_commit_error.post("/message", json={"message": "Test message"})
     assert response.status_code == 500
     data = response.json()
@@ -100,7 +100,7 @@ async def test_db_commit_error(client_db_commit_error, prepare_database):
 
 
 @pytest.mark.asyncio
-async def test_create_message_success(client, prepare_database):
+async def test_create_message_success(client: AsyncClient, prepare_database):
     response = await client.post("/message", json={ "message": "Test message" })
     assert response.status_code == 200
     data = response.json()
@@ -108,14 +108,14 @@ async def test_create_message_success(client, prepare_database):
 
 
 @pytest.mark.asyncio
-async def test_create_message_db_error(client_db_connect_error):
+async def test_create_message_db_connect_error(client_db_connect_error):
     response = await client_db_connect_error.post("/message", json={ "message": "Test message" })
     assert response.status_code == 500
     data = response.json()
     assert "error" in data
 
 @pytest.mark.asyncio
-async def test_create_empty_message(client, prepare_database):
+async def test_create_empty_message(client: AsyncClient, prepare_database):
     response = await client.post("/message", json={"message": ""})
     assert response.status_code == 400
     assert "empty" in response.json()["detail"].lower()
@@ -126,7 +126,7 @@ async def test_create_empty_message(client, prepare_database):
     assert response.json()["detail"] == "Message cannot be empty"
 
 @pytest.mark.asyncio
-async def test_create_long_message(client, prepare_database):
+async def test_create_long_message(client: AsyncClient, prepare_database):
     long_message = "a" * 1000000  # Adjust length based on your actual limits
     response = await client.post("/message", json={"message": long_message})
     assert response.status_code == 200
@@ -135,17 +135,17 @@ async def test_create_long_message(client, prepare_database):
 
 
 @pytest.mark.asyncio
-async def test_invalid_json(client, prepare_database):
+async def test_create_message_invalid_json(client: AsyncClient, prepare_database):
     response = await client.post("/message", content="{invalid json}")
     assert response.status_code == 422  # FastAPI's default validation error code
 
 @pytest.mark.asyncio
-async def test_missing_message_field(client, prepare_database):
+async def test_create_message_missing_message_field(client: AsyncClient, prepare_database):
     response = await client.post("/message", json={})
     assert response.status_code == 422
 
 @pytest.mark.asyncio
-async def test_wrong_message_type(client, prepare_database):
+async def test_create_message_wrong_message_type(client: AsyncClient, prepare_database):
     response = await client.post("/message", json={"message": 123})
     assert response.status_code == 422
 
@@ -153,22 +153,30 @@ async def test_wrong_message_type(client, prepare_database):
 ######## Update Tests ###########
 
 @pytest.mark.asyncio
-async def test_update_message_success(client, prepare_database):
+async def test_update_message_success(client: AsyncClient, prepare_database):
     await client.post("/message", json={ "message": "Test message" })
     response = await client.put("/message/1", json={ "message": "Updated message" })
     assert response.status_code == 200
     data = response.json()
     assert data["message"] == "Updated message"
 
+@pytest.mark.asyncio
+async def test_update_message_db_connect_error(client_db_connect_error: AsyncClient):
+    response = await client_db_connect_error.put("/message/1", json={ "message": "Test message" })
+    assert response.status_code == 500
+    data = response.json()
+    assert "error" in data
 
 @pytest.mark.asyncio
-async def test_update_nonexistent_message_404_error(client, prepare_database):
+async def test_update_message_nonexistent_message_404_error(client: AsyncClient, prepare_database):
     response = await client.put("/message/100", json={ "message": "Test message" })
     assert response.status_code == 404
 
 @pytest.mark.asyncio
-async def test_update_empty_message(client, prepare_database):
-    response = await client.put("/message/1", json={"message": ""})
+async def test_update_message_empty_message(client: AsyncClient, prepare_database):
+    response = await client.post("/message", json={ "message": "Test message" })
+    user_message_id = response.json()["exchange"][0]["id"]
+    response = await client.put(f"/message/{user_message_id}", json={"message": ""})
     assert response.status_code == 400
     assert response.json()["detail"] == "Message cannot be empty"
 
@@ -178,28 +186,65 @@ async def test_update_empty_message(client, prepare_database):
     assert response.json()["detail"] == "Message cannot be empty"
 
 @pytest.mark.asyncio
-async def test_update_long_message(client, prepare_database):
+async def test_update_message_long_message(client: AsyncClient, prepare_database):
+    response = await client.post("/message", json={ "message": "Test message" })
+    user_message_id = response.json()["exchange"][0]["id"]
     long_message = "a" * 1000000  # Adjust length based on your actual limits
-    response = await client.put("/message/1", json={"message": long_message})
+    response = await client.put(f"/message/{user_message_id}", json={"message": long_message})
     assert response.status_code == 200
     assert response.json()["message"] == long_message
 
 @pytest.mark.asyncio
-async def test_invalid_json(client, prepare_database):
+async def test_update_message_invalid_json(client: AsyncClient, prepare_database):
     response = await client.put("/message/1", content="{invalid json}")
     assert response.status_code == 422  # FastAPI's default validation error code
 
 @pytest.mark.asyncio
-async def test_missing_message_field(client, prepare_database):
+async def test_update_message_missing_message_field(client: AsyncClient, prepare_database):
     response = await client.put("/message/1", json={})
     assert response.status_code == 422
 
 @pytest.mark.asyncio
-async def test_wrong_id_type_field(client, prepare_database):
+async def test_update_message_wrong_id_type_field(client: AsyncClient, prepare_database):
     response = await client.put("/message/id", json={})
     assert response.status_code == 422
 
 @pytest.mark.asyncio
-async def test_wrong_message_type(client, prepare_database):
+async def test_update_message_wrong_message_type(client: AsyncClient, prepare_database):
     response = await client.post("/message", json={"message": 123})
     assert response.status_code == 422
+
+
+######## Delete Tests ###########
+
+@pytest.mark.asyncio
+async def test_delete_message_success(client: AsyncClient, prepare_database):
+    response = await client.post("/message", json={"message": "Test Message"})
+    response = await client.delete("/message/1")
+    assert response.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_delete_message_noexistant_message_404_error(client: AsyncClient, prepare_database):
+    response = await client.delete("/message/100")
+    assert response.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_delete_message_wrong_id_type_field(client: AsyncClient, prepare_database):
+    response = await client.delete("/message/id")
+    assert response.status_code == 422
+
+@pytest.mark.asyncio
+async def test_delete_message_db_error(client_db_connect_error: AsyncClient):
+    response = await client_db_connect_error.delete("/message/1")
+    assert response.status_code == 500
+    data = response.json()
+    assert "error" in data
+
+@pytest.mark.asyncio
+async def test_delete_message_db_connect_error(client_db_connect_error: AsyncClient):
+    response = await client_db_connect_error.delete("/message/1")
+    assert response.status_code == 500
+    data = response.json()
+    assert "error" in data
