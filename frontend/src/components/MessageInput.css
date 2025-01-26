@@ -18,9 +18,7 @@
 }
 
 .send-button {
-  width: 15%;
   background-color: transparent;
-  color: white;
   border: none;
   cursor: pointer;
 }

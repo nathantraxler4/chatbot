@@ -10,13 +10,31 @@
 .message.user {
   background-color: var(--color-user-bg);
   color: white;
-  align-self: flex-end;
   border-radius: 20px 0 20px 20px;
 }
 
 .message.chatbot {
   background-color: var(--color-chatbot-bg);
   color: black;
-  align-self: flex-start;
   border-radius: 0 20px 20px 20px;
+}
+
+.message-container {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.message-container.user {
+  align-self: flex-end;
+}
+
+.message-container.chatbot {
+  align-self: flex-start;
+}
+
+.message-actions-container {
+  display: flex;
+  gap: 2px;
+  align-items: center;
 }

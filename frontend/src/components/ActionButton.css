@@ -1,0 +1,17 @@
+.action-button {
+  background-color: transparent;
+  border: none;
+  opacity: 0;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.action-icon {
+  height: 15px;
+  width: 15px;
+  color: grey;
+}
+
+.action-button:hover {
+  opacity: 1;
+}

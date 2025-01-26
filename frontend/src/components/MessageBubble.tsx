@@ -1,4 +1,7 @@
+import ActionButton from "./ActionButton";
 import "./MessageBubble.css";
+import { FaRegEdit } from "react-icons/fa";
+import { MdDelete } from "react-icons/md";
 
 const MessageBubble = ({
   author,
@@ -8,8 +11,16 @@ const MessageBubble = ({
   message: string;
 }) => {
   return (
-    <div className={`message ${author}`}>
-      <p className="messagetext">{message}</p>
+    <div className={`message-container ${author}`}>
+      {author === "user" && (
+        <div className="message-actions-container">
+          <ActionButton Icon={MdDelete} />
+          <ActionButton Icon={FaRegEdit} />
+        </div>
+      )}
+      <div className={`message ${author}`}>
+        <p>{message}</p>
+      </div>
     </div>
   );
 };
