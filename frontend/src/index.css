@@ -12,10 +12,10 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  --color-user-bg: #7f40f2; /* Light Green */
-  --color-chatbot-bg: #f9fafb; /* White */
-  --color-chatwindow-bg: #ffffff; /* Light Grey */
-  --color-box-shadow: #eaeaea; /* Shadow Color */
+  --color-user-bg: #7f40f2;
+  --color-chatbot-bg: #f9fafb;
+  --color-chatwindow-bg: #ffffff;
+  --color-box-shadow: #eaeaea;
 }
 
 a {
