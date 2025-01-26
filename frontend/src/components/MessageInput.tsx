@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { KeyboardEventHandler, useState } from "react";
 import "./MessageInput.css";
 import { FaArrowRight } from "react-icons/fa";
 
@@ -20,12 +20,19 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage }) => {
     }
   };
 
+  const handleEnterDown: KeyboardEventHandler<HTMLInputElement> = (e) => {
+    if (e.key === "Enter") {
+      handleSendMessage();
+    }
+  };
+
   return (
     <div className="message-input-container">
       <input
         type="text"
         value={userInput}
         onChange={handleChange}
+        onKeyDown={handleEnterDown}
         placeholder="Your question"
         className="message-input"
       />
