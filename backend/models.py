@@ -24,7 +24,7 @@ class TimestampMixin:
     )
 
     
-class Message(Base, TimestampMixin):
+class MessageModel(Base, TimestampMixin):
     __tablename__ = "message"
 
     # columns
