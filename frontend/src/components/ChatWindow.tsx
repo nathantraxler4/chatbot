@@ -3,7 +3,7 @@ import MessageInput from "./MessageInput";
 import "./ChatWindow.css";
 import { useEffect, useRef, useState } from "react";
 
-type Message = {
+export type Message = {
   id: number;
   author: string;
   message: string;
@@ -12,6 +12,7 @@ type Message = {
 const ChatWindow = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>();
+  const prevMessageCountRef = useRef<number | undefined>(undefined);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollToBottom = () => {
@@ -44,8 +45,35 @@ const ChatWindow = () => {
     }
   };
 
+  const handleDeleteMessage = async (messageId: number) => {
+    try {
+      const response = await fetch(
+        `http://localhost:8000/message/${messageId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(response.statusText);
+      }
+
+      setMessages((prevMessages) =>
+        prevMessages.filter((msg) => msg.id !== messageId)
+      );
+    } catch (error) {
+      setErrorMessage("Something went wrong. Please try again!");
+      console.error("Error sending message:", error);
+    }
+  };
+
   useEffect(() => {
-    scrollToBottom();
+    if (messages.length - (prevMessageCountRef.current ?? 0) > 0)
+      scrollToBottom();
+    prevMessageCountRef.current = messages.length;
   }, [messages]);
 
   return (
@@ -54,8 +82,8 @@ const ChatWindow = () => {
         {messages.map((msg) => (
           <MessageBubble
             key={msg.id}
-            author={msg.author}
-            message={msg.message}
+            message={msg}
+            onDelete={handleDeleteMessage}
           />
         ))}
         {/* So we can programmatically scroll here on send.*/}

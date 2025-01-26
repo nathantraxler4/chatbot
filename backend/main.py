@@ -56,7 +56,7 @@ async def put_message(message_id: int, body: PostMessage, session: AsyncSession 
     return MessageContract.from_model(updated_message)
 
 @app.delete("/message/{message_id}")
-async def put_message(message_id: int, session: AsyncSession = Depends(get_session)) -> bool:
+async def remove_message(message_id: int, session: AsyncSession = Depends(get_session)) -> bool:
     is_deleted = await delete_message(message_id, session)
     return is_deleted
 
