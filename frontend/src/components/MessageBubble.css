@@ -1,0 +1,22 @@
+.message {
+  display: inline-block;
+  max-width: 80%;
+  font-size: 12px;
+  margin: 5px 0;
+  padding: 0 15px 0 15px;
+  text-align: start;
+}
+
+.message.user {
+  background-color: var(--color-user-bg);
+  color: white;
+  align-self: flex-end;
+  border-radius: 20px 0 20px 20px;
+}
+
+.message.chatbot {
+  background-color: var(--color-chatbot-bg);
+  color: black;
+  align-self: flex-start;
+  border-radius: 0 20px 20px 20px;
+}

@@ -5,12 +5,17 @@
 
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  background-color: #f5f5f5;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  --color-user-bg: #7f40f2; /* Light Green */
+  --color-chatbot-bg: #f9fafb; /* White */
+  --color-chatwindow-bg: #ffffff; /* Light Grey */
+  --color-box-shadow: #eaeaea; /* Shadow Color */
 }
 
 a {
