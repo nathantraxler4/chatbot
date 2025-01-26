@@ -1,0 +1,32 @@
+.message-input-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+  gap: 10px;
+}
+
+.message-input {
+  flex-grow: 1;
+  background-color: white;
+  color: black;
+  border: none;
+}
+
+.message-input:focus {
+  outline: none;
+}
+
+.send-button {
+  width: 15%;
+  background-color: transparent;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.send-arrow {
+  width: 15px;
+  height: 15px;
+  color: grey;
+}

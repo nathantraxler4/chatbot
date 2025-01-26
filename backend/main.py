@@ -12,7 +12,21 @@ from contracts import MessageExchange, PostMessage, MessageContract
 from database import get_session
 from crud_message import create_messages, update_message, delete_message
 
+from fastapi.middleware.cors import CORSMiddleware
+
 app = FastAPI()
+
+origins = [
+    "http://localhost:5173",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.exception_handler(ConnectionError)
 async def database_exception_handler(request, exc):

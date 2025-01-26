@@ -7,5 +7,17 @@
   border-radius: 20px;
   background-color: white;
   box-shadow: 0 0px 8px var(--color-box-shadow);
+}
+
+.messages-container {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
   overflow-y: auto;
+  scroll-behavior: smooth;
+}
+
+.error-message {
+  color: red;
+  font-size: 12px;
 }
