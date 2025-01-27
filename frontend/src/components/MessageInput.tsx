@@ -9,10 +9,6 @@ type MessageInputProps = {
 const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage }) => {
   const [userInput, setUserInput] = useState<string>("");
 
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setUserInput(event.target.value);
-  };
-
   const handleSendMessage = () => {
     if (userInput.trim()) {
       onSendMessage(userInput);
@@ -31,7 +27,9 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage }) => {
       <input
         type="text"
         value={userInput}
-        onChange={handleChange}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+          setUserInput(e.target.value)
+        }
         onKeyDown={handleEnterDown}
         placeholder="Your question"
         className="message-input"

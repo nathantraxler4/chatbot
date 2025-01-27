@@ -5,6 +5,7 @@
   margin: 5px 0;
   padding: 0 15px 0 15px;
   text-align: start;
+  word-break: break-word;
 }
 
 .message.user {
@@ -37,4 +38,36 @@
   display: flex;
   gap: 2px;
   align-items: center;
+}
+
+.edit-container {
+  background-color: var(--color-user-bg);
+  opacity: 0.85;
+  border-radius: 20px 0 20px 20px;
+  padding: 15px;
+}
+
+.edit-input {
+  border-radius: 20px 0 20px 20px;
+  background-color: transparent;
+  color: white;
+  border: none;
+  outline: none;
+}
+
+.edit-input::placeholder {
+  color: lightgray;
+}
+
+.edit-save-button {
+  background-color: transparent;
+  color: white;
+  border: none;
+}
+
+.edit-save-icon {
+  background-color: transparent;
+  color: white;
+  height: 15px;
+  height: 15px;
 }

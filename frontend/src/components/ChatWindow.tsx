@@ -47,6 +47,7 @@ const ChatWindow = () => {
 
   const handleDeleteMessage = async (messageId: number) => {
     try {
+      setErrorMessage(null);
       const response = await fetch(
         `http://localhost:8000/message/${messageId}`,
         {
@@ -70,6 +71,38 @@ const ChatWindow = () => {
     }
   };
 
+  const handleEditMessage = async (messageId: number, editText: string) => {
+    try {
+      setErrorMessage(null);
+      const response = await fetch(
+        `http://localhost:8000/message/${messageId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ message: editText }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(response.statusText);
+      }
+
+      const data = await response.json();
+
+      setMessages((prevMessages) => {
+        return prevMessages.map((msg) =>
+          msg.id === data.id ? { ...msg, message: data.message } : msg
+        );
+      });
+    } catch (error) {
+      setErrorMessage("Something went wrong. Please try again!");
+      console.error("Error sending message:", error);
+    }
+  };
+
+  // Ensure we only scroll to the bottom when a message is sent
   useEffect(() => {
     if (messages.length - (prevMessageCountRef.current ?? 0) > 0)
       scrollToBottom();
@@ -84,9 +117,10 @@ const ChatWindow = () => {
             key={msg.id}
             message={msg}
             onDelete={handleDeleteMessage}
+            onEditSave={handleEditMessage}
           />
         ))}
-        {/* So we can programmatically scroll here on send.*/}
+        {/* So we can programmatically scroll here when message is sent. */}
         <div ref={messagesEndRef} />
       </div>
       {errorMessage && <div className="error-message">{errorMessage}</div>}
