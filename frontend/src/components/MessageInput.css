@@ -2,8 +2,9 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 10px;
+  padding-top: 10px;
   gap: 10px;
+  border-top: 1px solid lightgray;
 }
 
 .message-input {
