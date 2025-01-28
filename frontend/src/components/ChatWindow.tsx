@@ -71,22 +71,21 @@ const ChatWindow = ({ session }: { session: Session }) => {
   };
 
   const handleEditMessage = async (messageId: number, editText: string) => {
+    const prevMessage = messages.find((m) => m.id === messageId) as Message;
     try {
       setErrorMessage(null);
-      const editedMessage = await api.editMessage(
-        messageId,
-        editText,
-        session.access_token
-      );
-
       setMessages((prevMessages) => {
         return prevMessages.map((msg) =>
-          msg.id === editedMessage.id
-            ? { ...msg, message: editedMessage.message }
-            : msg
+          msg.id === messageId ? { ...msg, message: editText } : msg
         );
       });
+      await api.editMessage(messageId, editText, session.access_token);
     } catch (error) {
+      setMessages((prevMessages) => {
+        return prevMessages.map((msg) =>
+          msg.id === messageId ? { ...prevMessage } : msg
+        );
+      });
       setErrorMessage("Something went wrong. Please try again!");
       console.error("Error sending message:", error);
     }

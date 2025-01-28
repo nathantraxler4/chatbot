@@ -1,4 +1,4 @@
-const host = "http://localhost:8000";
+const host = "https://nathans-chatbot-server-7d392ec059e8.herokuapp.com";
 
 export async function postMessage(messageText: string, session_token: string) {
   const response = await fetch(`${host}/message`, {
