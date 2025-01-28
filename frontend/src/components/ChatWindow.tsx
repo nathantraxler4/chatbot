@@ -2,6 +2,7 @@ import MessageBubble from "./MessageBubble";
 import MessageInput from "./MessageInput";
 import "./ChatWindow.css";
 import { useEffect, useRef, useState } from "react";
+import { Session } from "@supabase/supabase-js";
 
 export type Message = {
   id: number;
@@ -9,7 +10,7 @@ export type Message = {
   message: string;
 };
 
-const ChatWindow = () => {
+const ChatWindow = ({ session }: { session: Session }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>();
   const prevMessageCountRef = useRef<number | undefined>(undefined);
@@ -26,6 +27,7 @@ const ChatWindow = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({ message: userInput }),
       });
@@ -54,6 +56,7 @@ const ChatWindow = () => {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${session.access_token}`,
           },
         }
       );
@@ -80,6 +83,7 @@ const ChatWindow = () => {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${session.access_token}`,
           },
           body: JSON.stringify({ message: editText }),
         }

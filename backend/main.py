@@ -1,18 +1,25 @@
 from dotenv import load_dotenv
-import uvicorn
 load_dotenv()
-
+from jose import JWTError
+import uvicorn
+import os
 from typing import Dict, List
+from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from contracts import MessageExchange, PostMessage, MessageContract
 from database import get_session
 from crud_message import create_messages, update_message, delete_message
 
-from fastapi.middleware.cors import CORSMiddleware
+from supabase import create_client, Client
+
+url: str = os.environ.get("SUPABASE_URL")
+key: str = os.environ.get("SUPABASE_KEY")
+supabase: Client = create_client(url, key)
 
 app = FastAPI()
 
@@ -27,6 +34,43 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+cors_headers = {
+    "Access-Control-Allow-Origin": "http://localhost:5173",
+    "Access-Control-Allow-Methods": "*",
+    "Access-Control-Allow-Headers": "*",
+}
+
+class AuthMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        try: 
+            token = request.headers.get("Authorization")
+            if token:
+                token = token.split(" ")[-1]  # Remove "Bearer" part
+                try:
+                    request.state.user = supabase.auth.get_user(token)
+                except JWTError:
+                    raise HTTPException(status_code=401, detail="Invalid token")
+            else:
+                raise HTTPException(status_code=401, detail="Authorization token missing")
+            
+            response = await call_next(request)
+            return response
+    
+        except HTTPException as e:
+            return JSONResponse(
+                status_code=e.status_code,
+                content={"detail": e.detail},
+                headers=cors_headers,
+            )
+        except Exception as e:
+            return JSONResponse(
+                status_code=500,
+                content={"detail": "Internal Server Error"},
+                headers=cors_headers,
+            )
+        
+app.add_middleware(AuthMiddleware)
 
 @app.exception_handler(ConnectionError)
 async def database_exception_handler(request, exc):
