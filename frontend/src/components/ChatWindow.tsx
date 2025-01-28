@@ -13,6 +13,7 @@ export type Message = {
 
 const ChatWindow = ({ session }: { session: Session }) => {
   const [messages, setMessages] = useState<Message[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>();
   const prevMessageCountRef = useRef<number | undefined>(undefined);
 
@@ -24,6 +25,7 @@ const ChatWindow = ({ session }: { session: Session }) => {
   const handleSendMessage = async (userInput: string) => {
     try {
       setErrorMessage(null);
+      setLoading(true);
 
       const sentMessage = {
         id: -1,
@@ -54,6 +56,8 @@ const ChatWindow = ({ session }: { session: Session }) => {
       });
       setErrorMessage("Something went wrong. Please try again!");
       console.error("Error sending message:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -118,7 +122,7 @@ const ChatWindow = ({ session }: { session: Session }) => {
         <div ref={messagesEndRef} />
       </div>
       {errorMessage && <div className="error-message">{errorMessage}</div>}
-      <MessageInput onSendMessage={handleSendMessage} />
+      <MessageInput loading={loading} onSendMessage={handleSendMessage} />
     </div>
   );
 };
