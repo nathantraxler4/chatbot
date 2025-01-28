@@ -1,4 +1,4 @@
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 from httpx import AsyncClient, ASGITransport
 from jose import JWTError
 import pytest
@@ -41,7 +41,19 @@ def mock_get_user_func(token):
     if token == 'valid_token':
         return {"id": "test_user", "email": "user@example.com"}
     else:
-        raise JWTError() 
+        raise JWTError()
+    
+async def mock_create_func(model="", messages=""):
+    mock_content = MagicMock()
+    mock_content.content = "Mock LLM Response"
+    
+    mock_choice = MagicMock()
+    mock_choice.message = mock_content
+
+    mock_response = MagicMock()
+    mock_response.choices = [mock_choice]
+
+    return mock_response
 
 @pytest_asyncio.fixture
 async def prepare_database():
@@ -58,14 +70,19 @@ async def prepare_database():
         await conn.run_sync(Base.metadata.drop_all)
 
 @pytest.fixture
-def mock_supabase_auth():
+def mock_openai_create():
+    with patch("llm_service.client.chat.completions.create") as mock_create:
+        mock_create.side_effect = mock_create_func
+        yield mock_create
 
+@pytest.fixture
+def mock_supabase_auth():
     with patch("main.supabase.auth.get_user") as mock_get_user:
         mock_get_user.side_effect = mock_get_user_func
         yield mock_get_user
 
 @pytest_asyncio.fixture
-async def client(mock_supabase_auth):
+async def client(mock_supabase_auth, mock_openai_create):
     """
     Overrides get_session, and returns a AsyncClient.
     """
@@ -105,12 +122,12 @@ async def client_db_connect_error(mock_supabase_auth):
 
 ######## Create Tests ###########
 
-# @pytest.mark.asyncio
-# async def test_create_message_db_commit_error(client_db_commit_error: AsyncClient, prepare_database):
-#     response = await client_db_commit_error.post("/message", json={"message": "Test message"}, headers={'Authorization': 'Bearer valid_token'})
-#     assert response.status_code == 500
-#     data = response.json()
-#     assert data == {'detail': 'An unexpected error occurred. Please try again later.'}
+@pytest.mark.asyncio
+async def test_create_message_db_commit_error(client_db_commit_error: AsyncClient, prepare_database):
+    response = await client_db_commit_error.post("/message", json={"message": "Test message"}, headers={'Authorization': 'Bearer valid_token'})
+    assert response.status_code == 500
+    data = response.json()
+    assert data == {'detail': 'An unexpected error occurred. Please try again later.'}
 
 
 @pytest.mark.asyncio
@@ -119,6 +136,7 @@ async def test_create_message_success(client: AsyncClient, prepare_database):
     assert response.status_code == 200
     data = response.json()
     assert data["exchange"][0]["message"] == "Test message"
+    assert data["exchange"][1]["message"] == "Mock LLM Response"
 
 
 @pytest.mark.asyncio
@@ -146,6 +164,7 @@ async def test_create_long_message(client: AsyncClient, prepare_database):
     assert response.status_code == 200
     data = response.json()
     assert data["exchange"][0]["message"] == long_message
+    assert data["exchange"][1]["message"] == "Mock LLM Response"
 
 
 @pytest.mark.asyncio

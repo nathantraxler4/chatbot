@@ -14,6 +14,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from contracts import MessageExchange, PostMessage, MessageContract
 from database import get_session
 from crud_message import create_messages, update_message, delete_message
+from llm_service import get_chatbot_response
 
 from supabase import create_client, Client
 
@@ -88,10 +89,12 @@ async def database_exception_handler(request, exc):
 async def post_message(body: PostMessage, session: AsyncSession = Depends(get_session)) -> MessageExchange:
     if not body.message.strip():
         raise HTTPException(status_code=400, detail="Message cannot be empty")
+    
+    llm_response = await get_chatbot_response(body.message)
             
     messages: List[Dict[str, str]] = [
         {"author": "user", "content": body.message},
-        {"author": "chatbot", "content": body.message}
+        {"author": "chatbot", "content": llm_response}
     ]
     messages = await create_messages(messages, session)
     return  MessageExchange.from_models(messages)
