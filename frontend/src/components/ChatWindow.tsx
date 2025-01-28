@@ -24,14 +24,34 @@ const ChatWindow = ({ session }: { session: Session }) => {
   const handleSendMessage = async (userInput: string) => {
     try {
       setErrorMessage(null);
+
+      const sentMessage = {
+        id: -1,
+        message: userInput,
+        author: "user",
+      };
+
+      // Placeholder while waiting for response message with id
+      setMessages((prevMessages) => {
+        return [...prevMessages, sentMessage];
+      });
+
       const responseBody = await api.postMessage(
         userInput,
         session.access_token
       );
+
       setMessages((prevMessages) => {
-        return [...prevMessages, ...responseBody.exchange];
+        return [
+          ...prevMessages.filter((msg) => msg.id !== -1),
+          ...responseBody.exchange,
+        ];
       });
     } catch (error) {
+      // Remove message that did not get response
+      setMessages((prevMessages) => {
+        return [...prevMessages.filter((msg) => msg.id !== -1)];
+      });
       setErrorMessage("Something went wrong. Please try again!");
       console.error("Error sending message:", error);
     }
