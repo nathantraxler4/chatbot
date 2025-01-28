@@ -3,6 +3,7 @@ import MessageInput from "./MessageInput";
 import "./ChatWindow.css";
 import { useEffect, useRef, useState } from "react";
 import { Session } from "@supabase/supabase-js";
+import * as api from "../api";
 
 export type Message = {
   id: number;
@@ -23,21 +24,10 @@ const ChatWindow = ({ session }: { session: Session }) => {
   const handleSendMessage = async (userInput: string) => {
     try {
       setErrorMessage(null);
-      const response = await fetch("http://localhost:8000/message", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({ message: userInput }),
-      });
-
-      if (!response.ok) {
-        throw new Error(response.statusText);
-      }
-
-      const responseBody = await response.json();
-
+      const responseBody = await api.postMessage(
+        userInput,
+        session.access_token
+      );
       setMessages((prevMessages) => {
         return [...prevMessages, ...responseBody.exchange];
       });
@@ -50,21 +40,7 @@ const ChatWindow = ({ session }: { session: Session }) => {
   const handleDeleteMessage = async (messageId: number) => {
     try {
       setErrorMessage(null);
-      const response = await fetch(
-        `http://localhost:8000/message/${messageId}`,
-        {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${session.access_token}`,
-          },
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(response.statusText);
-      }
-
+      await api.deleteMessage(messageId, session.access_token);
       setMessages((prevMessages) =>
         prevMessages.filter((msg) => msg.id !== messageId)
       );
@@ -77,27 +53,17 @@ const ChatWindow = ({ session }: { session: Session }) => {
   const handleEditMessage = async (messageId: number, editText: string) => {
     try {
       setErrorMessage(null);
-      const response = await fetch(
-        `http://localhost:8000/message/${messageId}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${session.access_token}`,
-          },
-          body: JSON.stringify({ message: editText }),
-        }
+      const editedMessage = await api.editMessage(
+        messageId,
+        editText,
+        session.access_token
       );
-
-      if (!response.ok) {
-        throw new Error(response.statusText);
-      }
-
-      const data = await response.json();
 
       setMessages((prevMessages) => {
         return prevMessages.map((msg) =>
-          msg.id === data.id ? { ...msg, message: data.message } : msg
+          msg.id === editedMessage.id
+            ? { ...msg, message: editedMessage.message }
+            : msg
         );
       });
     } catch (error) {

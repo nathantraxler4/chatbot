@@ -43,7 +43,12 @@ cors_headers = {
 
 class AuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
-        try: 
+
+        # Skip cors preflight requests
+        if request.method == "OPTIONS":
+            return await call_next(request)
+
+        try:
             token = request.headers.get("Authorization")
             if token:
                 token = token.split(" ")[-1]  # Remove "Bearer" part
