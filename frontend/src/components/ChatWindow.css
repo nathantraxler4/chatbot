@@ -1,8 +1,8 @@
 .chatwindow {
   display: flex;
   flex-direction: column;
-  width: 350px;
-  height: 500px;
+  width: 360px;
+  height: 700px;
   padding: 12px;
   border-radius: 20px;
   background-color: white;
