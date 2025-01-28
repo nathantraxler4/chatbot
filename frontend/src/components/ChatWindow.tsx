@@ -101,6 +101,11 @@ const ChatWindow = ({ session }: { session: Session }) => {
 
   return (
     <div className="chatwindow">
+      {messages.length === 0 && (
+        <div className={`welcome-text`}>
+          <p>Hi! Ask me anything...</p>
+        </div>
+      )}
       <div className="messages-container">
         {messages.map((msg) => (
           <MessageBubble

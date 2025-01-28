@@ -9,6 +9,15 @@
   box-shadow: 0 0px 8px var(--color-box-shadow);
 }
 
+.welcome-text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: black;
+  height: 100%;
+}
+
 .messages-container {
   display: flex;
   flex-direction: column;
